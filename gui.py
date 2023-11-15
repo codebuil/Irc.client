@@ -1,4 +1,6 @@
-
+import socket
+import sys
+import threading
 import tkinter as tk
 from tkinter import simpledialog
 
@@ -11,6 +13,11 @@ class IRCClientGUI:
         self.nick = None
         self.password = None
         self.channel = "#home"
+        self.server = "192.168.1.5"
+        self.port = 6667
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock.connect((self.server, self.port))
+        
 
         # Configuração da GUI
         self.setup_gui()
@@ -37,9 +44,19 @@ class IRCClientGUI:
 
         # Aqui você pode iniciar seu cliente IRC, usar self.nick e self.password
         # para se conectar ao servidor IRC, juntar a um canal, etc.
+        
+        
+        self.send_messages(f"USER {self.nick} 0 * :{self.nick}\r\n")
+        self.send_messages(f"NICK {self.nick}\r\n")
+        self.send_messages(f"JOIN {self.channel}\r\n")
+ 
+
+    
 
     def send_message(self):
-        message = self.message_entry.get()
+        message:str = str(self.message_entry.get())
+        msg=f"PRIVMSG {self.channel} :{message}\r\n"
+        self.sock.send(msg.encode("utf-8"))
         self.display_message(f"> {self.nick}: {message}")
         # Aqui você pode enviar a mensagem para o servidor IRC
 
@@ -47,6 +64,8 @@ class IRCClientGUI:
         self.message_area.config(state="normal")
         self.message_area.insert("end", f"{message}\n")
         self.message_area.config(state="disabled")
+    def send_messages(self, message:str):
+        self.sock.send(message.encode("utf-8"))
 
 if __name__ == "__main__":
     root = tk.Tk()
