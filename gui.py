@@ -49,9 +49,20 @@ class IRCClientGUI:
         self.send_messages(f"USER {self.nick} 0 * :{self.nick}\r\n")
         self.send_messages(f"NICK {self.nick}\r\n")
         self.send_messages(f"JOIN {self.channel}\r\n")
- 
+        receive_thread = threading.Thread(target=self.receive_messages)
+        receive_thread.start()
 
-    
+    def receive_messages(self):
+        message:str=""
+        while True:
+            data = self.sock.recv(4096).decode("utf-8")
+            message=data
+            if not data:
+                break
+            self.message_area.config(state="normal")
+            self.message_area.insert("end", f"{message}\n")
+            self.message_area.config(state="disabled")
+
 
     def send_message(self):
         message:str = str(self.message_entry.get())
@@ -69,7 +80,8 @@ class IRCClientGUI:
 
 if __name__ == "__main__":
     root = tk.Tk()
-    irc_gui = IRCClientGUI(root)
     root.configure(bg="brown", width=800, height=600)  # Define a cor de 
+    irc_gui = IRCClientGUI(root)
+    
 
     root.mainloop()
